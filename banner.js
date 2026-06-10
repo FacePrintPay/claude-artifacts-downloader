@@ -1,8 +1,9 @@
-// Copied from claudesave
+// Copied from claudesave - display success/error notifications
 function createBanner(message, type = "error", timeout = 8000) {
-  const banner = document.createElement("article");
-  banner.className = type === "error" ? "error" : "success";
-  banner.style.cssText = `
+  try {
+    const banner = document.createElement("article");
+    banner.className = type === "error" ? "error" : "success";
+    banner.style.cssText = `
         position: fixed;
         top: 0;
         left: 0;
@@ -13,19 +14,30 @@ function createBanner(message, type = "error", timeout = 8000) {
         z-index: 9999;
         animation: slideDown 0.5s ease-out;
     `;
-  banner.innerHTML = `<p>${message}</p>`;
-  document.body.prepend(banner);
+    banner.innerHTML = `<p>${escapeHtml(message)}</p>`;
+    document.body.prepend(banner);
 
-  // Set a timeout to remove the banner after 8 seconds
-  setTimeout(() => {
-    banner.style.animation = "slideUp 0.5s ease-in";
-    setTimeout(() => banner.remove(), 500);
-  }, timeout);
+    // Set a timeout to remove the banner after specified time
+    setTimeout(() => {
+      banner.style.animation = "slideUp 0.5s ease-in";
+      setTimeout(() => banner.remove(), 500);
+    }, timeout);
+  } catch (error) {
+    console.error('[CAD] Error creating banner:', error);
+  }
+}
+
+// Sanitize HTML to prevent injection
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 // This adds the banner styles to the page
-const style = document.createElement("style");
-style.textContent = `
+try {
+  const style = document.createElement("style");
+  style.textContent = `
     @keyframes slideDown {
         from { transform: translateY(-100%); }
         to { transform: translateY(0); }
@@ -42,7 +54,10 @@ style.textContent = `
     article.success {
         background-color: #125019;
         border-color: #125019;
-        color: black white;
+        color: white;
     }
-`;
-document.head.appendChild(style);
+  `;
+  document.head.appendChild(style);
+} catch (error) {
+  console.error('[CAD] Error appending banner styles:', error);
+}
